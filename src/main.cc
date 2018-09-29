@@ -18,10 +18,11 @@ int program_options(Parg& pg)
   pg.name("crex").version("0.1.0 (28.09.2018)");
   pg.description("explore, test, and check regular expressions");
   pg.usage("[flags] [options] [--] [arguments]");
-  pg.usage("[-r regex] [-s string]");
+  pg.usage("[-r regex] [-s string] [-e|-b|-x|-a|-g|-E] [-ioc]");
   pg.usage("[-v|--version]");
   pg.usage("[-h|--help]");
   pg.info("Examples", {
+    "crex -r '(hello)' -s 'hello world!'",
     "crex --help",
     "crex --version",
   });
