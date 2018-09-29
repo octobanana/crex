@@ -4,6 +4,8 @@ using Parg = OB::Parg;
 #include "crex.hh"
 using Crex = OB::Crex;
 
+#include <string>
+#include <sstream>
 #include <iostream>
 #include <regex>
 #include <unistd.h>
@@ -12,6 +14,12 @@ int program_options(Parg& pg);
 std::regex_constants::syntax_option_type regex_options(Parg& pg);
 std::regex_constants::match_flag_type regex_flags(Parg& pg);
 bool is_tty();
+void regex_print(std::string regex, std::string text,
+  Crex::Matches const& matches, bool color);
+void regex_print_color(std::string regex, std::string text,
+  Crex::Matches const& matches);
+void regex_print_no_color(std::string regex, std::string text,
+  Crex::Matches const& matches);
 
 int program_options(Parg& pg)
 {
@@ -123,6 +131,87 @@ bool is_tty()
   return isatty(STDOUT_FILENO);
 }
 
+void regex_print(std::string regex, std::string text,
+  Crex::Matches const& matches, bool color)
+{
+  if (color)
+  {
+    regex_print_color(regex, text, matches);
+  }
+  else
+  {
+    regex_print_no_color(regex, text, matches);
+  }
+}
+
+void regex_print_color(std::string regex, std::string text,
+  Crex::Matches const& matches)
+{
+  std::stringstream ss; ss
+  << "Regex:\n"
+  << regex
+  << "\n\n"
+  << "Text:\n"
+  << text
+  << "\n\n"
+  << "Matches[" << matches.size() << "]:\n\n";
+
+  for (size_t i = 0; i < matches.size(); ++i)
+  {
+    auto const& match = matches.at(i);
+
+    ss
+    << "Match[" << i + 1 << "] "
+    << match.at(0).second.first << "-" << match.at(0).second.second
+    << " |" << match.at(0).first << "|\n";
+
+    for (size_t j = 1; j < match.size(); ++j)
+    {
+      ss
+      << "Group[" << j << "] "
+      << match.at(j).second.first << "-" << match.at(j).second.second
+      << " |" << match.at(j).first << "|\n";
+    }
+    ss << "\n";
+  }
+
+  std::cout << ss.str();
+}
+
+void regex_print_no_color(std::string regex, std::string text,
+  Crex::Matches const& matches)
+{
+  std::stringstream ss; ss
+  << "Regex:\n"
+  << regex
+  << "\n\n"
+  << "Text:\n"
+  << text
+  << "\n\n"
+  << "Matches[" << matches.size() << "]:\n\n";
+
+  for (size_t i = 0; i < matches.size(); ++i)
+  {
+    auto const& match = matches.at(i);
+
+    ss
+    << "Match[" << i + 1 << "] "
+    << match.at(0).second.first << "-" << match.at(0).second.second
+    << " |" << match.at(0).first << "|\n";
+
+    for (size_t j = 1; j < match.size(); ++j)
+    {
+      ss
+      << "Group[" << j << "] "
+      << match.at(j).second.first << "-" << match.at(j).second.second
+      << " |" << match.at(j).first << "|\n";
+    }
+    ss << "\n";
+  }
+
+  std::cout << ss.str();
+}
+
 int main(int argc, char *argv[])
 {
   Parg pg {argc, argv};
@@ -132,15 +221,26 @@ int main(int argc, char *argv[])
 
   try
   {
+    std::string regex {pg.get("regex")};
+    std::string text {pg.get_stdin() + pg.get("string")};
+
+    if (regex.empty() || text.empty())
+    {
+      return 1;
+    }
+
     OB::Crex crex {};
-    crex.regex(pg.get("regex"));
-    crex.text(pg.get_stdin() + pg.get("string"));
+    crex.regex(regex);
+    crex.text(text);
     crex.options(regex_options(pg));
     crex.flags(regex_flags(pg));
 
     if (! crex.run())
     {
+      return 1;
     }
+
+    regex_print(regex, text, crex.matches(), pg.get<bool>("color"));
   }
   catch (std::exception const& e)
   {
