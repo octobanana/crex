@@ -13,6 +13,10 @@ endif(CCACHE_FOUND)
 set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+set (CMAKE_CXX_FLAGS "-fdiagnostics-color=auto")
+set (CMAKE_C_FLAGS "-fdiagnostics-color=auto")
+
 set (DEBUG_FLAGS "-Wpedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused -std=c++14 -g")
 set (DEBUG_LINK_FLAGS "-fprofile-arcs -ftest-coverage -flto")
 
