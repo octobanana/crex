@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <utility>
 
 namespace OB
 {
@@ -11,23 +12,26 @@ namespace OB
 class Crex
 {
 public:
+  using Match = std::vector<std::pair<std::string, std::pair<size_t, size_t>>>;
+  using Matches = std::vector<Match>;
 
   Crex();
   ~Crex();
 
   Crex& regex(std::string regex_);
-  std::string regex();
+  std::string regex() const;
 
   Crex& text(std::string text_);
-  std::string text();
+  std::string text() const;
 
   Crex& options(std::regex_constants::syntax_option_type opts_);
-  std::regex_constants::syntax_option_type options();
+  std::regex_constants::syntax_option_type options() const;
 
   Crex& flags(std::regex_constants::match_flag_type flgs_);
-  std::regex_constants::match_flag_type flags();
+  std::regex_constants::match_flag_type flags() const;
 
   bool run();
+  Matches const& matches() const;
 
 private:
   std::string _regex;
@@ -36,19 +40,9 @@ private:
   std::regex_constants::syntax_option_type _opts {};
   std::regex_constants::match_flag_type _flgs {};
 
-  std::vector<std::string> split(std::string str, std::string delim, int match = 0)
-  {
-    std::vector<std::string> vtok;
-    size_t start {0};
-    auto end = str.find(delim);
-    while (end != std::string::npos && match-- > 0) {
-      vtok.emplace_back(str.substr(start, end - start));
-      start = end + delim.length();
-      end = str.find(delim, start);
-    }
-    vtok.emplace_back(str.substr(start, end));
-    return vtok;
-  }
+  Matches _matches;
+
+  std::vector<std::string> split(std::string str, std::string delim, int match = 0) const;
 
 }; // class Crex
 
