@@ -5,9 +5,13 @@ using Parg = OB::Parg;
 using Crex = OB::Crex;
 
 #include <iostream>
+#include <regex>
 #include <unistd.h>
 
 int program_options(Parg& pg);
+std::regex_constants::syntax_option_type regex_options(Parg& pg);
+std::regex_constants::match_flag_type regex_flags(Parg& pg);
+bool is_tty();
 
 int program_options(Parg& pg)
 {
@@ -69,6 +73,55 @@ int program_options(Parg& pg)
   return 0;
 }
 
+std::regex_constants::syntax_option_type regex_options(Parg& pg)
+{
+  std::regex_constants::syntax_option_type opts {};
+  if (pg.get<bool>("icase"))
+  {
+    opts |= std::regex::icase;
+  }
+  if (pg.get<bool>("optimize"))
+  {
+    opts |= std::regex::optimize;
+  }
+  if (pg.get<bool>("ecmascript"))
+  {
+    opts |= std::regex::ECMAScript;
+  }
+  if (pg.get<bool>("basic"))
+  {
+    opts |= std::regex::basic;
+  }
+  if (pg.get<bool>("extended"))
+  {
+    opts |= std::regex::extended;
+  }
+  if (pg.get<bool>("awk"))
+  {
+    opts |= std::regex::awk;
+  }
+  if (pg.get<bool>("grep"))
+  {
+    opts |= std::regex::grep;
+  }
+  if (pg.get<bool>("egrep"))
+  {
+    opts |= std::regex::egrep;
+  }
+  return opts;
+}
+
+std::regex_constants::match_flag_type regex_flags(Parg& pg)
+{
+  std::regex_constants::match_flag_type flgs {std::regex_constants::match_not_null};
+  return flgs;
+}
+
+bool is_tty()
+{
+  return isatty(STDOUT_FILENO);
+}
+
 int main(int argc, char *argv[])
 {
   Parg pg {argc, argv};
@@ -79,6 +132,14 @@ int main(int argc, char *argv[])
   try
   {
     OB::Crex crex {};
+    crex.regex(pg.get("regex"));
+    crex.text(pg.get_stdin() + pg.get("string"));
+    crex.options(regex_options(pg));
+    crex.flags(regex_flags(pg));
+
+    if (! crex.run())
+    {
+    }
   }
   catch (std::exception const& e)
   {
