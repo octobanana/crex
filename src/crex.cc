@@ -103,12 +103,12 @@ Crex::Matches const& Crex::matches() const
   return _matches;
 }
 
-std::vector<std::string> Crex::split(std::string str, std::string delim, int match) const
+std::vector<std::string> Crex::split(std::string str, std::string delim, int times) const
 {
   std::vector<std::string> vtok;
   size_t start {0};
   auto end = str.find(delim);
-  while (end != std::string::npos && match-- > 0)
+  while (end != std::string::npos && times-- > 0)
   {
     vtok.emplace_back(str.substr(start, end - start));
     start = end + delim.length();

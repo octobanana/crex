@@ -5,6 +5,7 @@
 #include <vector>
 #include <regex>
 #include <utility>
+#include <limits>
 
 namespace OB
 {
@@ -42,7 +43,8 @@ private:
 
   Matches _matches;
 
-  std::vector<std::string> split(std::string str, std::string delim, int match = 0) const;
+  std::vector<std::string> split(std::string str, std::string delim,
+    int times = std::numeric_limits<int>::max()) const;
 
 }; // class Crex
 
