@@ -23,6 +23,9 @@ void regex_print_color(std::string const& regex, std::string const& text,
   Crex::Matches const& matches);
 void regex_print_no_color(std::string const& regex, std::string const& text,
   Crex::Matches const& matches);
+void regex_print_json(std::string const& regex, std::string const& text,
+  Crex::Matches const& matches);
+std::string replace(std::string str, std::string key, std::string val);
 
 int program_options(Parg& pg)
 {
@@ -52,6 +55,7 @@ int program_options(Parg& pg)
 
   // combinable flags
   pg.set("color,c", "print out results in color");
+  pg.set("json,j", "print out results in json");
 
   // options
   pg.set("string,s", "", "str", "the string to search");
@@ -132,6 +136,19 @@ std::regex_constants::match_flag_type regex_flags(Parg& pg)
 bool is_tty()
 {
   return isatty(STDOUT_FILENO);
+}
+
+std::string replace(std::string str, std::string key, std::string val)
+{
+  size_t pos {0};
+  for (;;)
+  {
+    pos = str.find(key, pos);
+    if (pos == std::string::npos) break;
+    str.replace(pos, key.size(), val);
+    pos += val.size();
+  }
+  return str;
 }
 
 class Color_Ring
@@ -344,6 +361,62 @@ void regex_print_no_color(std::string const& regex, std::string const& text,
   std::cout << ss.str();
 }
 
+void regex_print_json(std::string const& regex, std::string const& text,
+  Crex::Matches const& matches)
+{
+  auto const get_matches = [&]() {
+    std::stringstream ss;
+
+    for (size_t i = 0; i < matches.size(); ++i)
+    {
+      auto const& match = matches.at(i);
+
+      ss
+      << "[";
+
+      for (size_t j = 0; j < match.size(); ++j)
+      {
+        ss
+        << "{"
+        << "\"text\":\"" << replace(match.at(j).first, "\"", "\\\"") << "\","
+        << "\"begin\":" << match.at(j).second.first << ","
+        << "\"end\":" << match.at(j).second.second
+        << "}";
+
+        if (j != match.size() - 1)
+        {
+          ss
+          << ",";
+        }
+      }
+
+      ss
+      << "]";
+
+      if (i != matches.size() - 1)
+      {
+        ss
+        << ",";
+      }
+    }
+
+    return ss.str();
+  };
+
+  std::stringstream ss;
+
+  ss
+  << "{"
+  << "\"regex\":\"" << replace(regex, "\"", "\\\"") << "\","
+  << "\"text\":\"" << replace(text, "\"", "\\\"") << "\","
+  << "\"matches\":"
+  << "["
+  << get_matches()
+  << "]}";
+
+  std::cout << ss.str();
+}
+
 int main(int argc, char *argv[])
 {
   Parg pg {argc, argv};
@@ -372,7 +445,14 @@ int main(int argc, char *argv[])
       return 1;
     }
 
-    regex_print(regex, text, crex.matches(), pg.get<bool>("color"));
+    if (pg.get<bool>("json"))
+    {
+      regex_print_json(regex, text, crex.matches());
+    }
+    else
+    {
+      regex_print(regex, text, crex.matches(), pg.get<bool>("color"));
+    }
   }
   catch (std::exception const& e)
   {
