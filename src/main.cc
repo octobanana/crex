@@ -29,10 +29,10 @@ std::string replace(std::string str, std::string key, std::string val);
 
 int program_options(Parg& pg)
 {
-  pg.name("crex").version("0.1.0 (28.09.2018)");
+  pg.name("crex").version("0.2.0 (30.09.2018)");
   pg.description("explore, test, and check regular expressions");
   pg.usage("[flags] [options] [--] [arguments]");
-  pg.usage("[-r regex] [-s string] [-e|-b|-x|-a|-g|-E] [-ioc]");
+  pg.usage("[-e|-b|-x|-a|-g|-E] [-io] [-c|-j] [-r regex] [-s string]");
   pg.usage("[-v|--version]");
   pg.usage("[-h|--help]");
   pg.info("Examples", {
