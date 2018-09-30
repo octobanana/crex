@@ -13,7 +13,6 @@ endif(CCACHE_FOUND)
 set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
 set (CMAKE_CXX_FLAGS "-fdiagnostics-color=auto")
 set (CMAKE_C_FLAGS "-fdiagnostics-color=auto")
 
@@ -41,6 +40,7 @@ include_directories(
 set (SOURCES
   src/main.cc
   src/crex.cc
+  src/ansi_escape_codes.cc
 )
 
 set (HEADERS
