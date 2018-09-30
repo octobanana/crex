@@ -92,38 +92,46 @@ int program_options(Parg& pg)
 std::regex_constants::syntax_option_type regex_options(Parg& pg)
 {
   std::regex_constants::syntax_option_type opts {};
+
   if (pg.get<bool>("icase"))
   {
     opts |= std::regex::icase;
   }
+
   if (pg.get<bool>("optimize"))
   {
     opts |= std::regex::optimize;
   }
+
   if (pg.get<bool>("ecmascript"))
   {
     opts |= std::regex::ECMAScript;
   }
-  if (pg.get<bool>("basic"))
+  else if (pg.get<bool>("basic"))
   {
     opts |= std::regex::basic;
   }
-  if (pg.get<bool>("extended"))
+  else if (pg.get<bool>("extended"))
   {
     opts |= std::regex::extended;
   }
-  if (pg.get<bool>("awk"))
+  else if (pg.get<bool>("awk"))
   {
     opts |= std::regex::awk;
   }
-  if (pg.get<bool>("grep"))
+  else if (pg.get<bool>("grep"))
   {
     opts |= std::regex::grep;
   }
-  if (pg.get<bool>("egrep"))
+  else if (pg.get<bool>("egrep"))
   {
     opts |= std::regex::egrep;
   }
+  else
+  {
+    opts |= std::regex::ECMAScript;
+  }
+
   return opts;
 }
 
