@@ -4,6 +4,9 @@ using Parg = OB::Parg;
 #include "crex.hh"
 using Crex = OB::Crex;
 
+#include "ansi_escape_codes.hh"
+namespace aec = OB::ANSI_Escape_Codes;
+
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -14,11 +17,11 @@ int program_options(Parg& pg);
 std::regex_constants::syntax_option_type regex_options(Parg& pg);
 std::regex_constants::match_flag_type regex_flags(Parg& pg);
 bool is_tty();
-void regex_print(std::string regex, std::string text,
+void regex_print(std::string const& regex, std::string const& text,
   Crex::Matches const& matches, bool color);
-void regex_print_color(std::string regex, std::string text,
+void regex_print_color(std::string const& regex, std::string const& text,
   Crex::Matches const& matches);
-void regex_print_no_color(std::string regex, std::string text,
+void regex_print_no_color(std::string const& regex, std::string const& text,
   Crex::Matches const& matches);
 
 int program_options(Parg& pg)
@@ -131,7 +134,60 @@ bool is_tty()
   return isatty(STDOUT_FILENO);
 }
 
-void regex_print(std::string regex, std::string text,
+class Color_Ring
+{
+public:
+  Color_Ring(std::vector<std::string> colors):
+    _colors {colors}
+  {
+  }
+
+  std::string next()
+  {
+    auto res = get();
+    if (++_pos > _colors.size() - 1)
+    {
+      _pos = 0;
+    }
+    return res;
+  }
+
+  std::string get() const
+  {
+    return _colors.at(_pos);
+  }
+
+  Color_Ring& reset()
+  {
+    _pos = 0;
+    return *this;
+  }
+
+private:
+  std::vector<std::string> const _colors;
+  size_t _pos {0};
+};
+
+struct Style
+{
+  std::vector<std::string> h1 {aec::fg_white, aec::bold, aec::underline};
+  std::vector<std::string> h2 {aec::fg_green, aec::bold};
+  std::vector<std::string> h3 {aec::fg_magenta, aec::bold};
+  std::vector<std::string> num {aec::fg_cyan, aec::bold};
+  std::string match {aec::fg_green};
+  std::string plain {};
+  std::vector<std::string> special {aec::fg_white, aec::bold};
+  Color_Ring ring {{
+    aec::fg_magenta,
+    aec::fg_blue,
+    aec::fg_cyan,
+    aec::fg_green,
+    aec::fg_yellow,
+    aec::fg_red
+  }};
+};
+
+void regex_print(std::string const& regex, std::string const& text,
   Crex::Matches const& matches, bool color)
 {
   if (color)
@@ -144,51 +200,126 @@ void regex_print(std::string regex, std::string text,
   }
 }
 
-void regex_print_color(std::string regex, std::string text,
+void regex_print_color(std::string const& regex, std::string const& text,
   Crex::Matches const& matches)
 {
-  std::stringstream ss; ss
-  << "Regex:\n"
+  Style style;
+
+  std::stringstream ss_head;
+  std::stringstream ss;
+
+  ss_head
+  << aec::wrap("Regex", style.h1) << "\n"
   << regex
   << "\n\n"
-  << "Text:\n"
-  << text
+  << aec::wrap("Text", style.h1) << "\n";
+
+  ss
   << "\n\n"
-  << "Matches[" << matches.size() << "]:\n\n";
+  << aec::wrap("Matches", style.h1) << "[" << aec::wrap(matches.size(), style.num) << "]\n";
+
+  size_t pos {0};
 
   for (size_t i = 0; i < matches.size(); ++i)
   {
+    style.ring.reset();
+
     auto const& match = matches.at(i);
 
     ss
-    << "Match[" << i + 1 << "] "
-    << match.at(0).second.first << "-" << match.at(0).second.second
-    << " |" << match.at(0).first << "|\n";
+    << aec::wrap("Match", style.h2) << "[" << aec::wrap(i + 1, style.num) << "] "
+    << aec::wrap(match.at(0).second.first, style.num)
+    << "-"
+    << aec::wrap(match.at(0).second.second, style.num)
+    << aec::wrap(" |", style.special);
+
+    std::string const& tmatch {match.at(0).first};
+    size_t const offset {match.at(0).second.first};
+
+    size_t prev {0};
+    size_t begin {0};
+    size_t end {0};
+
+    std::stringstream ss_text;
+    std::stringstream ss_match;
 
     for (size_t j = 1; j < match.size(); ++j)
     {
-      ss
-      << "Group[" << j << "] "
-      << match.at(j).second.first << "-" << match.at(j).second.second
-      << " |" << match.at(j).first << "|\n";
+      auto ftext = aec::wrap(match.at(j).first, style.ring.next());
+
+      begin = match.at(j).second.first - offset;
+      end = match.at(j).second.second - offset;
+
+      if (prev < begin)
+      {
+        ss_text
+        << aec::wrap(tmatch.substr(prev + 1, begin - prev - 1), style.plain);
+      }
+      ss_text
+      << ftext;
+
+      prev = end;
+
+      ss_match
+      << aec::wrap("Group", style.h3) << "[" << aec::wrap(j, style.num) << "] "
+      << aec::wrap(begin, style.num)
+      << "-"
+      << aec::wrap(end, style.num)
+      << aec::wrap(" |", style.special)
+      << ftext
+      << aec::wrap("|\n", style.special);
     }
-    ss << "\n";
+
+    if (prev < tmatch.size() - 1)
+    {
+      ss_text
+      << aec::wrap(tmatch.substr(prev + 1, begin - prev - 1), style.plain);
+    }
+    ss_match
+    << "\n";
+
+    ss
+    << ss_text.str()
+    << aec::wrap("|\n", style.special)
+    << ss_match.str();
+
+    if (pos < offset)
+    {
+      ss_head
+      << aec::wrap(text.substr(pos + 1, offset - pos - 1), style.plain);
+    }
+    pos = offset + end;
+
+    ss_head
+    << aec::wrap("(", style.special)
+    << ss_text.str()
+    << aec::wrap(")[", style.special)
+    << aec::wrap(i + 1, style.num)
+    << aec::wrap("]", style.special);
   }
 
-  std::cout << ss.str();
+  if (pos < text.size() - 1)
+  {
+    ss_head
+    << aec::wrap(text.substr(pos + 1, text.size() - pos - 1), style.plain);
+  }
+
+  std::cout << ss_head.str() << ss.str();
 }
 
-void regex_print_no_color(std::string regex, std::string text,
+void regex_print_no_color(std::string const& regex, std::string const& text,
   Crex::Matches const& matches)
 {
-  std::stringstream ss; ss
-  << "Regex:\n"
+  std::stringstream ss;
+
+  ss
+  << "Regex\n"
   << regex
   << "\n\n"
-  << "Text:\n"
+  << "Text\n"
   << text
   << "\n\n"
-  << "Matches[" << matches.size() << "]:\n\n";
+  << "Matches[" << matches.size() << "]\n";
 
   for (size_t i = 0; i < matches.size(); ++i)
   {
@@ -206,7 +337,8 @@ void regex_print_no_color(std::string regex, std::string text,
       << match.at(j).second.first << "-" << match.at(j).second.second
       << " |" << match.at(j).first << "|\n";
     }
-    ss << "\n";
+    ss
+    << "\n";
   }
 
   std::cout << ss.str();
