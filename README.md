@@ -1,6 +1,8 @@
 # crex
 Explore, test, and check regular expressions in the terminal.
 
+![asciimation plane example](https://raw.githubusercontent.com/octobanana/crex/master/assets/crex.png)
+
 Given your regular expression and text, crex will output matches, capture groups, and details.
 crex also has a range of options, allowing fine grained control over matching and output.
 
