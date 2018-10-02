@@ -287,9 +287,9 @@ void regex_print_color(std::string const& regex, std::string const& text,
 
       ss_match
       << aec::wrap("Group", style.h3) << "[" << aec::wrap(j, style.num) << "] "
-      << aec::wrap(begin, style.num)
+      << aec::wrap(begin + offset, style.num)
       << "-"
-      << aec::wrap(end, style.num)
+      << aec::wrap(end + offset, style.num)
       << aec::wrap(" |", style.special)
       << ftext
       << aec::wrap("|\n", style.special);
