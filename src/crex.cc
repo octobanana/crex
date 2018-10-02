@@ -79,13 +79,12 @@ bool Crex::run()
     size_t pos_match {pos};
     for (size_t i = 1; i < match.size(); ++i)
     {
-      auto v = split(t, std::string(match[i]), 2);
-
-      pos_match += v.at(0).size();
+      auto v = split(t, std::string(match[i]));
+      pos_match += v.first.size();
 
       _matches.back().emplace_back(std::make_pair(std::string(match[i]), std::make_pair(pos_match, pos_match + std::string(match[i]).size() - 1)));
 
-      t = v.at(1);
+      t = v.second;
       pos_match += std::string(match[i]).size();
     }
 
@@ -103,19 +102,18 @@ Crex::Matches const& Crex::matches() const
   return _matches;
 }
 
-std::vector<std::string> Crex::split(std::string str, std::string delim, int times) const
+std::pair<std::string, std::string> Crex::split(std::string str, std::string delim) const
 {
-  std::vector<std::string> vtok;
-  size_t start {0};
-  auto end = str.find(delim);
-  while (end != std::string::npos && times-- > 0)
-  {
-    vtok.emplace_back(str.substr(start, end - start));
-    start = end + delim.length();
-    end = str.find(delim, start);
+  std::pair<std::string, std::string> ptok {"", ""};
+  auto pos = str.find(delim);
+  if (pos != std::string::npos) {
+    ptok.first = str.substr(0, pos);
+    if (pos + delim.size() != std::string::npos)
+    {
+      ptok.second = str.substr(pos + delim.size());
+    }
   }
-  vtok.emplace_back(str.substr(start, end));
-  return vtok;
+  return ptok;
 }
 
 } // namespace OB
