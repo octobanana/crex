@@ -275,15 +275,15 @@ void regex_print_color(std::string const& regex, std::string const& text,
       begin = match.at(j).second.first - offset;
       end = match.at(j).second.second - offset;
 
-      if (prev < begin)
+      if (prev <= begin)
       {
         ss_text
-        << aec::wrap(tmatch.substr(prev + 1, begin - prev - 1), style.plain);
+        << aec::wrap(tmatch.substr(prev, begin - prev), style.plain);
       }
       ss_text
       << ftext;
 
-      prev = end;
+      prev = end + 1;
 
       ss_match
       << aec::wrap("Group", style.h3) << "[" << aec::wrap(j, style.num) << "] "
@@ -295,10 +295,10 @@ void regex_print_color(std::string const& regex, std::string const& text,
       << aec::wrap("|\n", style.special);
     }
 
-    if (prev < tmatch.size() - 1)
+    if (prev < tmatch.size())
     {
       ss_text
-      << aec::wrap(tmatch.substr(prev + 1, begin - prev - 1), style.plain);
+      << aec::wrap(tmatch.substr(prev, begin - prev), style.plain);
     }
     ss_match
     << "\n";
@@ -311,9 +311,10 @@ void regex_print_color(std::string const& regex, std::string const& text,
     if (pos < offset)
     {
       ss_head
-      << aec::wrap(text.substr(pos + 1, offset - pos - 1), style.plain);
+      << aec::wrap(text.substr(pos, offset - pos), style.plain);
     }
-    pos = offset + end;
+
+    pos = offset + match.at(0).first.size() ;
 
     ss_head
     << aec::wrap("(", style.special)
@@ -323,10 +324,10 @@ void regex_print_color(std::string const& regex, std::string const& text,
     << aec::wrap("]", style.special);
   }
 
-  if (pos < text.size() - 1)
+  if (pos < text.size())
   {
     ss_head
-    << aec::wrap(text.substr(pos + 1, text.size() - pos - 1), style.plain);
+    << aec::wrap(text.substr(pos, text.size() - pos), style.plain);
   }
 
   std::cout << ss_head.str() << ss.str();
