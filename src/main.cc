@@ -49,6 +49,9 @@ int program_options(Parg& pg)
   });
   pg.author("Brett Robinson (octobanana) <octobanana.dev@gmail.com>");
 
+  // enable piped stdin
+  pg.set_stdin();
+
   // single flags
   pg.set("help,h", "print the help output");
   pg.set("version,v", "print the program version");
