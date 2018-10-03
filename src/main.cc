@@ -89,6 +89,12 @@ int program_options(Parg& pg)
     std::cout << pg.name() << " v" << pg.version() << "\n";
     return 1;
   }
+  if (! pg.find("regex") || (! pg.find("string") && pg.get_stdin().empty()))
+  {
+    std::cout << pg.help() << "\n";
+    std::cout << "Error: " << "expected '-r' and '-s' options" << "\n";
+    return -1;
+  }
   return 0;
 }
 
