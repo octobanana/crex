@@ -4,7 +4,10 @@ Explore, test, and check regular expressions in the terminal.
 ![asciimation plane example](https://raw.githubusercontent.com/octobanana/crex/master/assets/crex.png)
 
 Given your regular expression and text, crex will output matches, capture groups, and details.
-crex also has a range of options, allowing fine grained control over matching and output.
+crex has a range of options, allowing fine grained control over matching and output.
+It uses ECMAScript grammar by default, while also accepting posix, extended posix, awk, grep, and extended grep grammars.
+Input can be received by piped stdin, or by using the __-s__ option.
+Output options include plain, colour, and json formats.
 
 ## Build
 Environment:
