@@ -23,7 +23,7 @@ void regex_print_color(std::string const& regex, std::string const& text,
   Crex::Matches const& matches);
 void regex_print_no_color(std::string const& regex, std::string const& text,
   Crex::Matches const& matches);
-void regex_print_json(std::string const& regex, std::string const& text,
+void regex_print_json(std::string& regex, std::string& text,
   Crex::Matches const& matches);
 std::string replace(std::string str, std::string key, std::string val);
 
@@ -370,7 +370,7 @@ void regex_print_no_color(std::string const& regex, std::string const& text,
   std::cout << ss.str();
 }
 
-void regex_print_json(std::string const& regex, std::string const& text,
+void regex_print_json(std::string& regex, std::string& text,
   Crex::Matches const& matches)
 {
   auto const get_matches = [&]() {
@@ -385,9 +385,13 @@ void regex_print_json(std::string const& regex, std::string const& text,
 
       for (size_t j = 0; j < match.size(); ++j)
       {
+        auto mtext = match.at(j).first;
+        mtext = replace(mtext, "\"", "\\\"");
+        mtext = replace(mtext, "\\", "\\\\");
+
         ss
         << "{"
-        << "\"text\":\"" << replace(match.at(j).first, "\"", "\\\"") << "\","
+        << "\"mtext\":\"" << mtext << "\","
         << "\"begin\":" << match.at(j).second.first << ","
         << "\"end\":" << match.at(j).second.second
         << "}";
@@ -414,10 +418,16 @@ void regex_print_json(std::string const& regex, std::string const& text,
 
   std::stringstream ss;
 
+  regex = replace(regex, "\"", "\\\"");
+  regex = replace(regex, "\\", "\\\\");
+
+  text = replace(text, "\"", "\\\"");
+  text = replace(text, "\\", "\\\\");
+
   ss
   << "{"
-  << "\"regex\":\"" << replace(regex, "\"", "\\\"") << "\","
-  << "\"text\":\"" << replace(text, "\"", "\\\"") << "\","
+  << "\"regex\":\"" << regex << "\","
+  << "\"text\":\"" << text << "\","
   << "\"matches\":"
   << "["
   << get_matches()
