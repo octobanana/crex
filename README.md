@@ -20,8 +20,8 @@ Libraries:
 
 The following shell commands will build the project:
 ```bash
-git clone <repo_name>
-cd <repo_name>
+git clone https://github.com/octobanana/crex.git
+cd crex
 ./build.sh -r
 ```
 To build the debug version, run the build script without the -r flag.
