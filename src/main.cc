@@ -304,7 +304,12 @@ void regex_print_color(std::string const& regex, std::string const& text,
       << aec::wrap("|\n", style.special);
     }
 
-    if (prev < tmatch.size())
+    if (match.size() < 2)
+    {
+      ss_text
+      << aec::wrap(tmatch, style.plain);
+    }
+    else if (prev < tmatch.size())
     {
       ss_text
       << aec::wrap(tmatch.substr(prev, begin - prev), style.plain);
