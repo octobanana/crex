@@ -453,7 +453,20 @@ int main(int argc, char *argv[])
 
     if (regex.empty() || text.empty())
     {
-      return 1;
+      if (regex.empty())
+      {
+        throw std::runtime_error(
+          "regex is empty, expected '-r' option"
+          "\nView the help output with '-h'"
+        );
+      }
+      if (text.empty())
+      {
+        throw std::runtime_error(
+          "text is empty, expected '-s' option or piped stdin"
+          "\nView the help output with '-h'"
+        );
+      }
     }
 
     OB::Crex crex {};
@@ -464,7 +477,7 @@ int main(int argc, char *argv[])
 
     if (! crex.run())
     {
-      return 1;
+      throw std::runtime_error("no matches found");
     }
 
     if (pg.get<bool>("json"))
