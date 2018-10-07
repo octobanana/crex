@@ -63,35 +63,37 @@ std::regex_constants::match_flag_type Crex::flags() const
 bool Crex::run()
 {
   std::regex rx {_regex, _opts};
+  auto regex_begin = std::sregex_iterator(_text.begin(), _text.end(), rx, _flgs);
+  auto regex_end = std::sregex_iterator();
 
-  std::string tmp = _text;
   size_t pos {0};
-  std::smatch match;
-  while (std::regex_search(tmp, match, rx, _flgs))
+  for (auto imatch = regex_begin; imatch != regex_end; ++imatch)
   {
-    pos += std::string(match.prefix()).size();
-    std::string t {match[0]};
+    std::smatch match {*imatch};
+    pos = static_cast<size_t>(match.position());
+    std::string tmp {match[0].str()};
 
     _matches.emplace_back(Match());
 
-    _matches.back().emplace_back(std::make_pair(std::string(match[0]), std::make_pair(pos, pos + std::string(match[0]).size() - 1)));
+    _matches.back().emplace_back(
+      std::make_pair(match[0].str(),
+      std::make_pair(pos, pos + static_cast<size_t>(match[0].length()) - 1))
+    );
 
     size_t pos_match {pos};
     for (size_t i = 1; i < match.size(); ++i)
     {
-      auto v = split(t, std::string(match[i]));
+      auto v = split(tmp, match[i].str());
       pos_match += v.first.size();
 
-      _matches.back().emplace_back(std::make_pair(std::string(match[i]), std::make_pair(pos_match, pos_match + std::string(match[i]).size() - 1)));
+      _matches.back().emplace_back(
+        std::make_pair(match[i].str(),
+        std::make_pair(pos_match, pos_match + static_cast<size_t>(match[i].length()) - 1))
+      );
 
-      t = v.second;
-      pos_match += std::string(match[i]).size();
+      tmp = v.second;
+      pos_match += static_cast<size_t>(match[i].length());
     }
-
-    pos += std::string(match[0]).size();
-    tmp = std::string(match.suffix());
-
-    if (tmp.empty()) break;
   }
 
   return (! _matches.empty());

@@ -29,7 +29,7 @@ std::string replace(std::string str, std::string key, std::string val);
 
 int program_options(Parg& pg)
 {
-  pg.name("crex").version("0.2.4 (03.10.2018)");
+  pg.name("crex").version("0.2.5 (07.10.2018)");
   pg.description("explore, test, and check regular expressions");
   pg.usage("[flags] [options] [--] [arguments]");
   pg.usage("[-e|-b|-x|-a|-g|-E] [-io] [-c|-j] [-r regex] [-s string]");
