@@ -20,7 +20,7 @@ Libraries:
 
 The following shell commands will build the project:
 ```bash
-git clone https://github.com/octobanana/crex.git
+git clone <repo_name>
 cd crex
 ./build.sh -r
 ```
